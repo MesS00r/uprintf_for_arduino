@@ -128,7 +128,7 @@ void usart_print_ch(const char ch) {
     UDR0 =  ch;
 }
 
-void usart_print_str(const char *str) {
+void usart_print_str(PGM_P str) {
     char ch;
     while ((ch = pgm_read_byte(str))) {
         usart_print_ch(ch);
@@ -184,7 +184,7 @@ void usart_print_hex(const uint16_t num) {
 
 // ****** USART PRINT ******
 
-void _uprintf(const char *fmt, uint8_t len, uint16_t *args) {
+void uprint_write(PGM_P fmt, uint8_t len, uint16_t *args) {
     uint8_t index = 0;
     char ch0, ch1;
 
