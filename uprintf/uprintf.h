@@ -6,50 +6,21 @@
 #include <avr/pgmspace.h>
 
 void ubegin(const uint16_t baud);
+void _uprintf(const char *fmt, uint8_t len, uint16_t *args);
 
-void usart_print_ch(const char ch);
-void usart_print_str(const char *str);
-void usart_print_dec(const uint16_t num);
-void usart_print_bin(const uint16_t num);
-void usart_print_hex(const uint16_t num);
-
-inline void uprintf(const char *fmt) {
-    usart_print_str(fmt);
+inline void get_arg(uint16_t arg, uint16_t *copy) {
+    *copy = arg;
 }
 
-template <typename First, typename ... Args>
-void uprintf(const char *fmt, const First& first, const Args& ... args) {
-    // uint8_t len = (sizeof...(args) + 1);
-    char ch0, ch1;
+template <typename ... Args>
+void uprintf(PGM_P fmt, const Args& ... args) {
+    uint8_t len = sizeof...(args), index = 0;
+    uint16_t arg_arr[len];
 
-    ch0 = pgm_read_byte(fmt);
-    fmt++;
+    int dummy[] = {0, (get_arg(args, &arg_arr[index++]), 0)...};
+    (void)dummy;
 
-    if (ch0 == '%') {
-        ch1 = pgm_read_byte(fmt);
-        fmt++;
-
-        switch (ch1) {
-        case 'd': case 'D':
-            usart_print_dec(first);
-            break;
-        case 'b': case 'B':
-            usart_print_bin(first);
-            break;
-        case 'x': case 'X':
-            usart_print_hex(first);
-            break;
-        default:
-            usart_print_ch(ch0);
-            usart_print_ch(ch1);
-            break;
-        }
-
-        uprintf(fmt, args...);
-    } else {
-        usart_print_ch(ch0);
-        uprintf(fmt, first, args...);
-    }
+    _uprintf(fmt, len, arg_arr);
 }
 
 #endif //USARTPRINT_H_INCLUDED

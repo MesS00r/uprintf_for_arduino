@@ -41,7 +41,7 @@ uint16_t remu10d(uint16_t num, uint8_t deg) {
     deg = deg > 4 ? 4 : deg;
 
     for (uint8_t i = 0; i < deg; i++) {
-        rem *= pow10 * i;
+        rem *= (pow10 * i);
         rem += remu10(num);
     }
     return rem;
@@ -113,7 +113,7 @@ void ubegin(const uint16_t baud) {
     UBRR0H = (uint8_t)(usart_speed >> 8);
     UBRR0L = (uint8_t)usart_speed;
 
-    // UCSR0B = (1 << TXEN0) | (1 << RXEN0);
+    UCSR0B = (1 << TXEN0);
     UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
 }
 
@@ -143,7 +143,7 @@ void usart_print_dec(const uint16_t num) {
         uint16_t divnum = divu10d(num, deg - 1);
         uint16_t rem = remu10(divnum);
 
-        if (divnum == 0) continue;
+        if (divnum == 0 && (deg - 1) != 0) continue;
         else usart_print_ch(('0' + rem));
     }
 }
@@ -184,34 +184,34 @@ void usart_print_hex(const uint16_t num) {
 
 // ****** USART PRINT ******
 
-// void _uprintf(const char *fmt, uint8_t len, uint16_t *args) {
-//     uint8_t index = 0;
-//     char ch0, ch1;
+void _uprintf(const char *fmt, uint8_t len, uint16_t *args) {
+    uint8_t index = 0;
+    char ch0, ch1;
 
-//     while ((ch0 = pgm_read_byte(fmt))) {
-//         fmt++;
+    while ((ch0 = pgm_read_byte(fmt))) {
+        fmt++;
 
-//         if (ch0 == '%' && index < len) {
-//             ch1 = pgm_read_byte(fmt);
-//             fmt++;
+        if (ch0 == '%' && index < len) {
+            ch1 = pgm_read_byte(fmt);
+            fmt++;
 
-//             switch (ch1) {
-//             case 'd': case 'D':
-//                 usart_print_dec(args[index]);
-//                 break;
-//             case 'b': case 'B':
-//                 usart_print_bin(args[index]);
-//                 break;
-//             case 'x': case 'X':
-//                 usart_print_hex(args[index]);
-//                 break;
-//             default:
-//                 usart_print_ch(ch0);
-//                 usart_print_ch(ch1);
-//                 break;
-//             }
+            switch (ch1) {
+            case 'd': case 'D':
+                usart_print_dec(args[index]);
+                break;
+            case 'b': case 'B':
+                usart_print_bin(args[index]);
+                break;
+            case 'x': case 'X':
+                usart_print_hex(args[index]);
+                break;
+            default:
+                usart_print_ch(ch0);
+                usart_print_ch(ch1);
+                break;
+            }
 
-//             index++;
-//         } else usart_print_ch(ch0);
-//     }
-// }
+            index++;
+        } else usart_print_ch(ch0);
+    }
+}
